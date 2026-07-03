@@ -83,6 +83,8 @@ public class SecurityConfigPhase1 {
                     .requestMatchers("/api/patient/register").permitAll()
                     .requestMatchers("/api/patient/login").permitAll()
                     .requestMatchers("/api/patient/**").hasRole("PATIENT")
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
                     .requestMatchers("/api/ping").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/actuator/info").permitAll()
@@ -106,7 +108,7 @@ public class SecurityConfigPhase1 {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5174", "http://localhost:5175"));
+        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:517*", "http://127.0.0.1:517*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

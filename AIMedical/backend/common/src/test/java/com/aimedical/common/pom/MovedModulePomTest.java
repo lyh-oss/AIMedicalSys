@@ -147,13 +147,15 @@ class MovedModulePomTest {
         assertTrue(exists(rootPom, "/project/modules/module[.='modules/examination']"));
         assertTrue(exists(rootPom, "/project/modules/module[.='modules/lab-test']"));
         assertTrue(exists(rootPom, "/project/modules/module[.='modules/device']"));
+        assertTrue(exists(rootPom, "/project/modules/module[.='modules/consultation']"));
+        assertTrue(exists(rootPom, "/project/modules/module[.='modules/prescription']"));
         assertTrue(exists(rootPom, "/project/modules/module[.='application']"));
         assertTrue(exists(rootPom, "/project/modules/module[.='integration']"));
     }
 
     @Test
-    void rootPomShouldHaveExactlyThirteenModules() throws Exception {
-        assertEquals(13, rootPom.getDocumentElement()
+    void rootPomShouldHaveExactlyFifteenModules() throws Exception {
+        assertEquals(15, rootPom.getDocumentElement()
             .getElementsByTagName("module").getLength());
     }
 }

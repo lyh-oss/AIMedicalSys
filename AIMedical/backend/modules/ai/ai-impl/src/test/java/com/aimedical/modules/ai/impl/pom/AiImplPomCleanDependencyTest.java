@@ -48,13 +48,43 @@ class AiImplPomCleanDependencyTest {
     }
 
     @Test
+    void shouldContainSpringBootStarterWeb() throws Exception {
+        assertTrue(exists("/project/dependencies/dependency[groupId='org.springframework.boot' and artifactId='spring-boot-starter-web']"));
+    }
+
+    @Test
     void shouldContainTestStarterWithTestScope() throws Exception {
         assertTrue(exists("/project/dependencies/dependency[artifactId='spring-boot-starter-test' and scope='test']"));
     }
 
     @Test
-    void totalDependenciesCountShouldBeThree() throws Exception {
+    void totalDependenciesCountShouldBeEleven() throws Exception {
         Double count = (Double) xpath.evaluate("count(/project/dependencies/dependency)", doc, XPathConstants.NUMBER);
-        assertEquals(3, count.intValue());
+        assertEquals(11, count.intValue());
+    }
+
+    @Test
+    void shouldContainSpringSecurityCore() throws Exception {
+        assertTrue(exists("/project/dependencies/dependency[groupId='org.springframework.security' and artifactId='spring-security-core']"));
+    }
+
+    @Test
+    void shouldContainCaffeine() throws Exception {
+        assertTrue(exists("/project/dependencies/dependency[groupId='com.github.ben-manes.caffeine' and artifactId='caffeine']"));
+    }
+
+    @Test
+    void shouldContainGuava() throws Exception {
+        assertTrue(exists("/project/dependencies/dependency[groupId='com.google.guava' and artifactId='guava']"));
+    }
+
+    @Test
+    void shouldContainSpringBootStarterDataJpa() throws Exception {
+        assertTrue(exists("/project/dependencies/dependency[groupId='org.springframework.boot' and artifactId='spring-boot-starter-data-jpa']"));
+    }
+
+    @Test
+    void shouldContainH2WithTestScope() throws Exception {
+        assertTrue(exists("/project/dependencies/dependency[groupId='com.h2database' and artifactId='h2' and scope='test']"));
     }
 }

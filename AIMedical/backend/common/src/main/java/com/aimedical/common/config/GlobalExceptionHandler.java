@@ -8,15 +8,20 @@ import com.aimedical.common.util.MessageInterpolator;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -50,34 +55,7 @@ public class GlobalExceptionHandler {
      * @return 对应的HTTP状态码
      */
     private HttpStatus resolveHttpStatus(ErrorCode errorCode) {
-        String code = errorCode.getCode();
-        if (GlobalErrorCode.UNAUTHORIZED.getCode().equals(code)) {
-            return HttpStatus.UNAUTHORIZED;
-        }
-        if (GlobalErrorCode.FORBIDDEN.getCode().equals(code)) {
-            return HttpStatus.FORBIDDEN;
-        }
-        if (GlobalErrorCode.NOT_FOUND.getCode().equals(code)) {
-            return HttpStatus.NOT_FOUND;
-        }
-        if (GlobalErrorCode.PARAM_INVALID.getCode().equals(code)) {
-            return HttpStatus.BAD_REQUEST;
-        }
-        if (GlobalErrorCode.SYSTEM_ERROR.getCode().equals(code)) {
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-        if (GlobalErrorCode.ACCOUNT_LOCKED.getCode().equals(code)) {
-            return HttpStatus.LOCKED;
-        }
-        if (GlobalErrorCode.RATE_LIMITED.getCode().equals(code)
-                || GlobalErrorCode.RATE_LIMITED_GLOBAL.getCode().equals(code)) {
-            return HttpStatus.TOO_MANY_REQUESTS;
-        }
-        if (GlobalErrorCode.TOKEN_REFRESH_FAILED.getCode().equals(code)) {
-            return HttpStatus.UNAUTHORIZED;
-        }
-        // 其他业务错误码默认返回400
-        return HttpStatus.BAD_REQUEST;
+        return errorCode.getHttpStatus();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -130,6 +108,42 @@ public class GlobalExceptionHandler {
         log.error("Response body serialization failed", e);
         return ResponseEntity.status(500)
                 .body(Result.fail(GlobalErrorCode.SYSTEM_ERROR));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Result<Void>> handleNoResourceFound(NoResourceFoundException e) {
+        log.warn("No resource found: {}", e.getResourcePath());
+        return ResponseEntity.status(404)
+                .body(Result.fail(GlobalErrorCode.NOT_FOUND));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Result<Void>> handleAccessDenied(AccessDeniedException e) {
+        log.warn("Access denied: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Result.fail(GlobalErrorCode.FORBIDDEN));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Result<Void>> handleMissingParam(MissingServletRequestParameterException e) {
+        log.warn("Missing parameter: {}", e.getParameterName());
+        return ResponseEntity.badRequest()
+                .body(Result.fail(GlobalErrorCode.PARAM_INVALID.getCode(),
+                        "缺少必需参数: " + e.getParameterName()));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Result<Void>> handleOptimisticLock(ObjectOptimisticLockingFailureException e) {
+        log.warn("Optimistic lock failure: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Result.fail(GlobalErrorCode.CONFLICT));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Result<Void>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        log.warn("Data integrity violation: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Result.fail(GlobalErrorCode.CONFLICT));
     }
 
     @ExceptionHandler(Exception.class)

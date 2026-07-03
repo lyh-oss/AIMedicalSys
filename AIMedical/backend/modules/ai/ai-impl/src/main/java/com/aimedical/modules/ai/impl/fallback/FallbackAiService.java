@@ -1,20 +1,17 @@
 package com.aimedical.modules.ai.impl.fallback;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import com.aimedical.modules.ai.api.AiResult;
 import com.aimedical.modules.ai.api.AiService;
-import com.aimedical.modules.ai.api.degradation.DegradationContext;
-import com.aimedical.modules.ai.api.degradation.DegradationStrategy;
 import com.aimedical.modules.ai.api.dto.diagnosis.DiagnosisRequest;
 import com.aimedical.modules.ai.api.dto.diagnosis.DiagnosisResponse;
 import com.aimedical.modules.ai.api.dto.discussion.DiscussionConclusionRequest;
@@ -55,23 +52,22 @@ import com.aimedical.modules.ai.api.dto.triage.TriageResponse;
  * <p>{@code @Primary} 确保 DoctorAiServiceImpl 注入的是本类而非具体实现，
  * 形成双重锁定降级（本类委托判定 + DoctorAiServiceImpl 兜底捕获）。
  */
-@Primary
 @Service
+@ConditionalOnProperty(name = "ai.platform.enabled", havingValue = "true")
+@Primary
 public class FallbackAiService implements AiService {
 
     private static final Logger log = LoggerFactory.getLogger(FallbackAiService.class);
 
-    private final List<AiService> delegates;
-    private final List<DegradationStrategy> strategies;
+    private final AiService delegate;
 
-    public FallbackAiService(List<AiService> aiServiceList,
-                             List<DegradationStrategy> strategies) {
-        this.delegates = aiServiceList.stream()
-                .filter(s -> !(s instanceof FallbackAiService))
-                .collect(Collectors.toList());
-        this.strategies = strategies;
-        if (this.delegates.isEmpty()) {
-            log.error("No available AiService delegate");
+    public FallbackAiService(@org.springframework.beans.factory.annotation.Qualifier("aiOrchestrator") ObjectProvider<AiService> delegateProvider) {
+        AiService candidate = delegateProvider.getIfAvailable();
+        if (candidate == null) {
+            this.delegate = null;
+            log.warn("AiOrchestrator 未找到，FallbackAiService 将直接处理所有请求");
+        } else {
+            this.delegate = candidate;
         }
     }
 
@@ -82,131 +78,105 @@ public class FallbackAiService implements AiService {
 
     @Override
     public CompletableFuture<AiResult<TriageResponse>> triage(TriageRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).triage(request)
-                .thenApply(this::applyStrategies);
+        return delegate.triage(request);
     }
 
     @Override
     public CompletableFuture<AiResult<DiagnosisResponse>> diagnosis(DiagnosisRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).diagnosis(request)
-                .thenApply(this::applyStrategies);
+        return delegate.diagnosis(request);
     }
 
     @Override
     public CompletableFuture<AiResult<PrescriptionCheckResponse>> prescriptionCheck(PrescriptionCheckRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).prescriptionCheck(request)
-                .thenApply(this::applyStrategies);
+        return delegate.prescriptionCheck(request);
     }
 
     @Override
     public CompletableFuture<AiResult<MedicalRecordGenResponse>> generateMedicalRecord(MedicalRecordGenRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).generateMedicalRecord(request)
-                .thenApply(this::applyStrategies);
+        return delegate.generateMedicalRecord(request);
     }
 
     @Override
     public CompletableFuture<AiResult<InspectionReportResponse>> analysisReportForInspection(InspectionReportRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).analysisReportForInspection(request)
-                .thenApply(this::applyStrategies);
+        return delegate.analysisReportForInspection(request);
     }
 
     @Override
     public CompletableFuture<AiResult<LabTestReportResponse>> analysisReportForLabTest(LabTestReportRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).analysisReportForLabTest(request)
-                .thenApply(this::applyStrategies);
+        return delegate.analysisReportForLabTest(request);
     }
 
     @Override
     public CompletableFuture<AiResult<ImageAnalysisResponse>> imageAnalysis(ImageAnalysisRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).imageAnalysis(request)
-                .thenApply(this::applyStrategies);
+        return delegate.imageAnalysis(request);
     }
 
     @Override
     public CompletableFuture<AiResult<KbQueryResponse>> knowledgeBaseQuery(KbQueryRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).knowledgeBaseQuery(request)
-                .thenApply(this::applyStrategies);
+        return delegate.knowledgeBaseQuery(request);
     }
 
     @Override
     public CompletableFuture<AiResult<ExaminationRecommendResponse>> recommendExamination(ExaminationRecommendRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).recommendExamination(request)
-                .thenApply(this::applyStrategies);
+        return delegate.recommendExamination(request);
     }
 
     @Override
     public CompletableFuture<AiResult<PrescriptionAssistResponse>> prescriptionAssist(PrescriptionAssistRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).prescriptionAssist(request)
-                .thenApply(this::applyStrategies);
+        return delegate.prescriptionAssist(request);
     }
 
     @Override
     public CompletableFuture<AiResult<ExecutionOrderResponse>> recommendExecutionOrder(ExecutionOrderRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).recommendExecutionOrder(request)
-                .thenApply(this::applyStrategies);
+        return delegate.recommendExecutionOrder(request);
     }
 
     @Override
     public CompletableFuture<AiResult<ScheduleResponse>> schedule(ScheduleRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).schedule(request)
-                .thenApply(this::applyStrategies);
+        return delegate.schedule(request);
     }
 
     @Override
     public CompletableFuture<AiResult<DiscussionConclusionResponse>> discussionConclusion(DiscussionConclusionRequest request) {
-        if (delegates.isEmpty()) {
+        if (delegate == null) {
             return handleEmptyDelegates();
         }
-        return delegates.get(0).discussionConclusion(request)
-                .thenApply(this::applyStrategies);
-    }
-
-    private <T> AiResult<T> applyStrategies(AiResult<T> result) {
-        if (result.isSuccess() || result.isDegraded()) {
-            return result;
-        }
-        DegradationContext context = new DegradationContext();
-        for (DegradationStrategy strategy : strategies) {
-            if (strategy.shouldDegrade(context)) {
-                return AiResult.degraded("Degraded by strategy");
-            }
-        }
-        return result;
+        return delegate.discussionConclusion(request);
     }
 }
