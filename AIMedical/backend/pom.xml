@@ -24,6 +24,9 @@
         <module>modules/registration</module>
         <module>modules/admin</module>
         <module>modules/medical-order</module>
+        <module>modules/examination</module>
+        <module>modules/lab-test</module>
+        <module>modules/device</module>
         <module>application</module>
         <module>integration</module>
     </modules>
