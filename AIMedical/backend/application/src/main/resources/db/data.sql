@@ -145,14 +145,4 @@ INSERT INTO `patient_surgery_history` (`patient_id`, `surgery_name`, `surgery_at
 INSERT INTO `patient_medication_history` (`patient_id`, `drug_name`, `reason`, `started_at`, `created_at`, `updated_at`, `deleted`) VALUES
 (1, '硝苯地平缓释片', '高血压', '2022-02-01', NOW(), NOW(), 0);
 
--- ---------------------------------------------
--- 设备 Mock 种子数据
--- ---------------------------------------------
-INSERT INTO `device_info` (`device_code`, `device_name`, `device_type`, `protocol`, `status`, `manufacturer`, `model`, `location`, `connection_config`, `created_at`, `updated_at`, `deleted`) VALUES
-('LAB-001', '全自动生化分析仪', 'LAB_EQUIPMENT',     'HL7',   'ONLINE',      '罗氏',     'Cobas 8000',  '检验科1楼', '{"host":"192.168.1.100","port":5000}',           NOW(), NOW(), 0),
-('IMG-001', 'CT扫描机',         'IMAGING_EQUIPMENT', 'DICOM', 'ONLINE',      '西门子',   'SOMATOM',     '放射科1楼', '{"aeTitle":"AIMEDICAL_CT","port":11112}',       NOW(), NOW(), 0),
-('MON-001', '心电监护仪',       'MONITOR',           'HL7',   'ONLINE',      '飞利浦',   'IntelliVue',  'ICU 1号床', '{"host":"192.168.1.200","port":5001}',           NOW(), NOW(), 0),
-('LAB-002', '血细胞分析仪',     'LAB_EQUIPMENT',     'ASTM',  'OFFLINE',     '希森美康', 'XN-3000',     '检验科2楼', '{"host":"192.168.1.101","port":5002}',           NOW(), NOW(), 0),
-('IMG-002', 'MRI扫描机',        'IMAGING_EQUIPMENT', 'DICOM', 'MAINTENANCE', 'GE',       'Signa',       '放射科2楼', '{"aeTitle":"AIMEDICAL_MRI","port":11113}',      NOW(), NOW(), 0);
-
 SET FOREIGN_KEY_CHECKS = 1;

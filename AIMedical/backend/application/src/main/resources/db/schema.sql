@@ -723,14 +723,14 @@ CREATE TABLE `examination` (
   `doctor_id`           BIGINT        NOT NULL                COMMENT '医生ID',
   `examination_type`    VARCHAR(20)   NOT NULL                COMMENT '检查类型 CT/MRI/X_RAY/ULTRASOUND/MAMMOGRAPHY/ENDOSCOPY/OTHER',
   `body_part`           VARCHAR(200)  DEFAULT NULL            COMMENT '检查部位',
-  `clinical_diagnosis` VARCHAR(500)  DEFAULT NULL            COMMENT '临床诊断',
+  `clinical_diagnosis`  VARCHAR(500)  DEFAULT NULL            COMMENT '临床诊断',
   `scheduled_at`        DATETIME      DEFAULT NULL            COMMENT '预约时间',
   `status`              VARCHAR(20)   NOT NULL DEFAULT 'PENDING' COMMENT '状态 PENDING/SCHEDULED/IN_PROGRESS/COMPLETED/CANCELLED',
   `emergency_flag`      TINYINT(1)    NOT NULL DEFAULT 0      COMMENT '急诊标志 0否1是',
   `image_url`           VARCHAR(500)  DEFAULT NULL            COMMENT '影像URL',
   `image_type`          VARCHAR(50)   DEFAULT NULL            COMMENT '影像类型',
   `impression`          TEXT          DEFAULT NULL            COMMENT '影像表现',
-  `conclusion`          VARCHAR(1000) DEFAULT NULL           COMMENT '检查结论',
+  `conclusion`          VARCHAR(1000) DEFAULT NULL            COMMENT '检查结论',
   `ai_interpretation`   TEXT          DEFAULT NULL            COMMENT 'AI解读',
   `ai_confidence`       DOUBLE        DEFAULT NULL            COMMENT 'AI置信度',
   `image_analysis_result` TEXT        DEFAULT NULL            COMMENT 'AI影像分析结果',
@@ -806,8 +806,7 @@ CREATE TABLE `lab_test_item` (
   `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `deleted`         TINYINT(1)    NOT NULL DEFAULT 0       COMMENT '逻辑删除',
   PRIMARY KEY (`id`),
-  KEY `idx_lab_test_item_test` (`lab_test_id`),
-  KEY `idx_lab_test_item_name` (`item_name`)
+  KEY `idx_lab_test_item_lab_test` (`lab_test_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='检验明细表';
 
 -- ---------------------------------------------
@@ -819,8 +818,8 @@ CREATE TABLE `device_info` (
   `id`                BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `device_code`       VARCHAR(50)   NOT NULL                COMMENT '设备编码',
   `device_name`       VARCHAR(200)  NOT NULL                COMMENT '设备名称',
-  `device_type`       VARCHAR(30)   NOT NULL                COMMENT '设备类型 LAB_EQUIPMENT/IMAGING_EQUIPMENT/MONITOR/OTHER',
-  `protocol`          VARCHAR(20)   NOT NULL                COMMENT '协议 HL7/DICOM/ASTM/SERIAL/TCP/HTTP',
+  `device_type`       VARCHAR(30)   NOT NULL                COMMENT '设备类型 MONITOR/CT_SCANNER/MRI_SCANNER/X_RAY_MACHINE/ULTRASOUND/ANALYZER/OTHER',
+  `protocol`          VARCHAR(20)   NOT NULL                COMMENT '协议 HL7/DICOM/ASTM/MOCK',
   `status`            VARCHAR(20)   NOT NULL DEFAULT 'OFFLINE' COMMENT '状态 ONLINE/OFFLINE/ERROR/MAINTENANCE',
   `manufacturer`      VARCHAR(200)  DEFAULT NULL            COMMENT '厂商',
   `model`             VARCHAR(200)  DEFAULT NULL            COMMENT '型号',
@@ -832,31 +831,29 @@ CREATE TABLE `device_info` (
   `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `deleted`           TINYINT(1)    NOT NULL DEFAULT 0       COMMENT '逻辑删除',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_device_code` (`device_code`),
-  KEY `idx_device_type` (`device_type`),
-  KEY `idx_device_status` (`status`)
+  UNIQUE KEY `uk_device_code` (`device_code`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='设备信息表';
 
 -- ---------------------------------------------
--- 33. device_message 设备报文表
+-- 33. device_message 设备消息表
 -- ---------------------------------------------
 CREATE TABLE `device_message` (
   `id`             BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `device_id`      BIGINT        NOT NULL                COMMENT '设备ID',
-  `message_type`   VARCHAR(50)   NOT NULL                COMMENT '报文类型',
-  `protocol`       VARCHAR(20)   NOT NULL                COMMENT '协议',
+  `message_type`   VARCHAR(50)   NOT NULL                COMMENT '消息类型',
+  `protocol`       VARCHAR(20)   NOT NULL                COMMENT '协议 HL7/DICOM/ASTM/MOCK',
   `raw_content`    TEXT          DEFAULT NULL            COMMENT '原始内容',
-  `parsed_content` TEXT          DEFAULT NULL            COMMENT '解析后内容(JSON)',
+  `parsed_content` TEXT          DEFAULT NULL            COMMENT '解析后内容',
   `processed`      TINYINT(1)    NOT NULL DEFAULT 0      COMMENT '是否已处理 0否1是',
-  `received_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '接收时间',
+  `received_at`    DATETIME      NOT NULL                COMMENT '接收时间',
   `version`        BIGINT        NOT NULL DEFAULT 0       COMMENT '乐观锁版本号',
-  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `deleted`       TINYINT(1)    NOT NULL DEFAULT 0       COMMENT '逻辑删除',
+  `created_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted`        TINYINT(1)    NOT NULL DEFAULT 0       COMMENT '逻辑删除',
   PRIMARY KEY (`id`),
   KEY `idx_device_message_device` (`device_id`),
-  KEY `idx_device_message_type` (`message_type`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='设备报文表';
+  KEY `idx_device_message_received_at` (`received_at`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='设备消息表';
 
 SET FOREIGN_KEY_CHECKS = 1;
 SET REFERENTIAL_INTEGRITY TRUE;

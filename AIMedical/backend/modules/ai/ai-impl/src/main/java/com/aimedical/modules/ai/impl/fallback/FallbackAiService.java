@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,19 @@ import com.aimedical.modules.ai.api.dto.schedule.ScheduleResponse;
 import com.aimedical.modules.ai.api.dto.triage.TriageRequest;
 import com.aimedical.modules.ai.api.dto.triage.TriageResponse;
 
+/**
+ * AI 服务降级包装实现。
+ *
+ * <p>采用 {@code @Primary} + 单委托模式：通过 {@link ObjectProvider} 注入
+ * {@code aiOrchestrator} 限定的 {@link AiService} 实现作为主委托；
+ * AI 不可用时直接返回降级结果。
+ *
+ * <p>{@code @ConditionalOnProperty(name = "ai.platform.enabled", havingValue = "true")}
+ * 确保仅在 AI 平台启用时激活本 Bean。
+ *
+ * <p>{@code @Primary} 确保 DoctorAiServiceImpl 注入的是本类而非具体实现，
+ * 形成双重锁定降级（本类委托判定 + DoctorAiServiceImpl 兜底捕获）。
+ */
 @Primary
 @Service
 public class FallbackAiService implements AiService {
