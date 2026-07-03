@@ -17,7 +17,7 @@
 
         <el-empty
           v-if="!transcripts.length"
-          description="暂无发言记录，请点击"添加发言""
+          description="暂无发言记录，请点击「添加发言」"
           :image-size="60"
         />
 
