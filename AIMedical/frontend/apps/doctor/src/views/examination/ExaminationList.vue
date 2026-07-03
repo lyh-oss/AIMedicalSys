@@ -166,7 +166,7 @@ async function loadExaminations() {
       page?: number
       size?: number
     } = {
-      page: currentPage.value,
+      page: currentPage.value - 1,
       size: pageSize,
     }
     if (statusFilter.value) params.status = statusFilter.value

@@ -397,6 +397,26 @@ export interface AiMedicalRecordGenResponse {
   treatment_plan: string
 }
 
+/** AI 讨论结论生成-发言记录。对应后端 AiDiscussionConclusionRequest.Transcript。 */
+export interface AiDiscussionTranscript {
+  speaker_role: string
+  speaker_name: string
+  timestamp: string
+  content: string
+}
+
+/** AI 讨论结论生成请求。对应后端 AiDiscussionConclusionRequest。 */
+export interface AiDiscussionConclusionRequest {
+  transcripts: AiDiscussionTranscript[]
+}
+
+/** AI 讨论结论生成响应。对应后端 AiDiscussionConclusionResponse。 */
+export interface AiDiscussionConclusionResponse {
+  conclusion_summary: string
+  key_points: string
+  action_items: string
+}
+
 // ==================== Patient Profile ====================
 
 export interface PatientProfile {
@@ -925,4 +945,147 @@ export interface DeviceMessageResponse {
   received_at: string
   created_at: string
   updated_at: string
+}
+
+// ============ 医嘱域 (MedicalOrder) ============
+
+/** 医嘱类型：药品/检查/检验。对应后端 OrderType。 */
+export type MedicalOrderType = 'DRUG' | 'EXAMINATION' | 'LAB_TEST'
+
+/** 医嘱状态机：草稿/已提交/已收费/已发药/已完成/已取消。对应后端 OrderStatus。 */
+export type MedicalOrderStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'CHARGED'
+  | 'DISPENSED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+/** 医嘱明细项类型：药品/检查/检验。对应后端 ItemType。 */
+export type MedicalOrderItemType = 'DRUG' | 'EXAMINATION' | 'LAB_TEST'
+
+/** 医嘱明细项 DTO。对应后端 MedicalOrderItemDTO。 */
+export interface MedicalOrderItemDTO {
+  id?: number | null
+  order_id?: number | null
+  item_type: MedicalOrderItemType
+  item_code: string
+  item_name: string
+  specification?: string | null
+  quantity: number
+  unit?: string | null
+  unit_price: number
+  amount?: number | null
+  dosage?: string | null
+  usage_method?: string | null
+  frequency?: string | null
+  days?: number | null
+  remark?: string | null
+}
+
+/** 创建医嘱请求。对应后端 MedicalOrderCreateRequest。 */
+export interface MedicalOrderCreateRequest {
+  patient_id: number
+  doctor_id: number
+  registration_id: number
+  order_type: MedicalOrderType
+  diagnosis?: string | null
+  is_urgent?: boolean | null
+  remark?: string | null
+  items: MedicalOrderItemDTO[]
+}
+
+/** 医嘱响应 DTO。对应后端 MedicalOrderDTO。 */
+export interface MedicalOrderDTO {
+  id: number
+  patient_id: number
+  doctor_id: number
+  registration_id: number
+  order_no: string
+  order_type: MedicalOrderType
+  order_status: MedicalOrderStatus
+  diagnosis: string | null
+  total_amount: number | null
+  is_urgent: boolean | null
+  remark: string | null
+  items: MedicalOrderItemDTO[]
+}
+
+/** 预收费订单项 DTO。对应后端 ChargePreOrderItemDTO。 */
+export interface ChargePreOrderItemDTO {
+  id?: number | null
+  charge_pre_order_id?: number | null
+  charge_item_type: string
+  charge_item_code: string
+  charge_item_name: string
+  quantity: number
+  unit_price: number
+  amount: number | null
+}
+
+/** 预收费订单 DTO。对应后端 ChargePreOrderDTO。 */
+export interface ChargePreOrderDTO {
+  id: number
+  order_id: number
+  patient_id: number
+  charge_no: string
+  total_amount: number | null
+  charge_status: string
+  remark: string | null
+  items: ChargePreOrderItemDTO[]
+}
+
+/** 发药合同明细项。对应后端 MedicationOrderDTO.MedicationOrderItemDTO。 */
+export interface MedicationOrderItemDTO {
+  item_code: string
+  item_name: string
+  specification: string | null
+  quantity: number
+  unit: string | null
+  dosage: string | null
+  usage_method: string | null
+  frequency: string | null
+  days: number | null
+}
+
+/** 发药合同。对应后端 MedicationOrderDTO。 */
+export interface MedicationOrderDTO {
+  order_no: string
+  patient_id: number
+  patient_name: string
+  doctor_id: number
+  doctor_name: string
+  items: MedicationOrderItemDTO[]
+  diagnosis: string | null
+  is_urgent: boolean | null
+}
+
+// ============ 医生档案 (Doctor Profile) ============
+
+/** 医生档案 DTO。对应后端 DoctorDto。 */
+export interface DoctorDto {
+  id: number
+  user_id: number
+  real_name: string
+  gender: string | null
+  title: string | null
+  department: string | null
+  specialty: string | null
+  introduction: string | null
+  license_no: string | null
+  practice_years: number | null
+  consultation_fee: number | null
+  remark: string | null
+}
+
+/** 医生档案更新请求。对应后端 DoctorProfileUpdateRequest。 */
+export interface DoctorProfileUpdateRequest {
+  gender?: string | null
+  title?: string | null
+  department?: string | null
+  specialty?: string | null
+  introduction?: string | null
+  practice_years?: number | null
+  consultation_fee?: number | null
+  remark?: string | null
 }

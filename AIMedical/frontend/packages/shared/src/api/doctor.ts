@@ -4,6 +4,8 @@ import { apiGet, apiPost, apiPut } from './client'
 import type {
   AiDiagnosisRequest,
   AiDiagnosisResponse,
+  AiDiscussionConclusionRequest,
+  AiDiscussionConclusionResponse,
   AiExaminationRequest,
   AiExaminationResponse,
   AiMedicalRecordGenRequest,
@@ -13,7 +15,10 @@ import type {
   AiPrescriptionAuditRequest,
   AiPrescriptionAuditResponse,
   AiResultResponse,
+  ChargePreOrderDTO,
   ConsultationQueueResponse,
+  DoctorDto,
+  DoctorProfileUpdateRequest,
   ExaminationCompleteRequest,
   ExaminationCreateRequest,
   ExaminationResponse,
@@ -22,9 +27,12 @@ import type {
   LabTestCreateRequest,
   LabTestResponse,
   LabTestTrendResponse,
+  MedicalOrderCreateRequest,
+  MedicalOrderDTO,
   MedicalRecordCreateRequest,
   MedicalRecordResponse,
   MedicalRecordTemplateResponse,
+  MedicationOrderDTO,
   PageResponse,
   PrescriptionAuditRequest,
   PrescriptionCreateRequest,
@@ -197,6 +205,16 @@ export const doctorApi = {
     )
   },
 
+  /** 讨论结论生成入口。POST /api/doctor/ai/discussion-conclusion */
+  aiDiscussionConclusion: (
+    request: AiDiscussionConclusionRequest,
+  ): Promise<AiResultResponse<AiDiscussionConclusionResponse> | BusinessError> => {
+    return apiPost<AiResultResponse<AiDiscussionConclusionResponse>>(
+      '/doctor/ai/discussion-conclusion',
+      request,
+    )
+  },
+
   // ---- 检查域 (Examination) ----
 
   /** 创建检查单。POST /api/examinations */
@@ -333,5 +351,84 @@ export const doctorApi = {
     patientId: number,
   ): Promise<ExecutionOrderResponse | BusinessError> => {
     return apiGet<ExecutionOrderResponse>(`/lab-tests/execution-order/${patientId}`)
+  },
+
+  // ---- 医嘱域 (MedicalOrder) ----
+
+  /** 创建医嘱。POST /api/medical-orders */
+  createMedicalOrder: (
+    request: MedicalOrderCreateRequest,
+  ): Promise<MedicalOrderDTO | BusinessError> => {
+    return apiPost<MedicalOrderDTO>('/medical-orders', request)
+  },
+
+  /** 获取医嘱详情。GET /api/medical-orders/{id} */
+  getMedicalOrder: (id: number): Promise<MedicalOrderDTO | BusinessError> => {
+    return apiGet<MedicalOrderDTO>(`/medical-orders/${id}`)
+  },
+
+  /** 提交医嘱（DRAFT -> SUBMITTED）。POST /api/medical-orders/{id}/submit */
+  submitMedicalOrder: (id: number): Promise<MedicalOrderDTO | BusinessError> => {
+    return apiPost<MedicalOrderDTO>(`/medical-orders/${id}/submit`)
+  },
+
+  /** 取消医嘱。POST /api/medical-orders/{id}/cancel */
+  cancelMedicalOrder: (id: number): Promise<MedicalOrderDTO | BusinessError> => {
+    return apiPost<MedicalOrderDTO>(`/medical-orders/${id}/cancel`)
+  },
+
+  /** 完成医嘱。POST /api/medical-orders/{id}/complete */
+  completeMedicalOrder: (id: number): Promise<MedicalOrderDTO | BusinessError> => {
+    return apiPost<MedicalOrderDTO>(`/medical-orders/${id}/complete`)
+  },
+
+  /** 生成预收费订单。POST /api/medical-orders/{id}/charge-pre */
+  generateChargePreOrder: (
+    id: number,
+  ): Promise<ChargePreOrderDTO | BusinessError> => {
+    return apiPost<ChargePreOrderDTO>(`/medical-orders/${id}/charge-pre`)
+  },
+
+  /** 按患者分页查询医嘱。GET /api/medical-orders/patient/{patientId} */
+  listMedicalOrdersByPatient: (
+    patientId: number,
+    params?: { page?: number; size?: number },
+  ): Promise<PageResponse<MedicalOrderDTO> | BusinessError> => {
+    return apiGet<PageResponse<MedicalOrderDTO>>(
+      `/medical-orders/patient/${patientId}`,
+      { params },
+    )
+  },
+
+  /** 按医生分页查询医嘱。GET /api/medical-orders/doctor/{doctorId} */
+  listMedicalOrdersByDoctor: (
+    doctorId: number,
+    params?: { page?: number; size?: number },
+  ): Promise<PageResponse<MedicalOrderDTO> | BusinessError> => {
+    return apiGet<PageResponse<MedicalOrderDTO>>(
+      `/medical-orders/doctor/${doctorId}`,
+      { params },
+    )
+  },
+
+  /** 获取发药合同。GET /api/medical-orders/{id}/medication-contract */
+  getMedicationContract: (
+    id: number,
+  ): Promise<MedicationOrderDTO | BusinessError> => {
+    return apiGet<MedicationOrderDTO>(`/medical-orders/${id}/medication-contract`)
+  },
+
+  // ---- 医生档案 (Doctor Profile) ----
+
+  /** 查询当前登录医生的档案。GET /api/doctor/profile */
+  getDoctorProfile: (): Promise<DoctorDto | BusinessError> => {
+    return apiGet<DoctorDto>('/doctor/profile')
+  },
+
+  /** 更新当前登录医生的档案（仅可变字段）。PUT /api/doctor/profile */
+  updateDoctorProfile: (
+    request: DoctorProfileUpdateRequest,
+  ): Promise<DoctorDto | BusinessError> => {
+    return apiPut<DoctorDto>('/doctor/profile', request)
   },
 }
