@@ -683,3 +683,246 @@ export interface TriageHistoryRecord {
   matched_rules: string
   created_at: string
 }
+
+// ============ 检查域 (Examination) ============
+
+export type ExaminationType =
+  | 'CT'
+  | 'MRI'
+  | 'X_RAY'
+  | 'ULTRASOUND'
+  | 'MAMMOGRAPHY'
+  | 'ENDOSCOPY'
+  | 'OTHER'
+
+export type ExaminationStatus =
+  | 'PENDING'
+  | 'SCHEDULED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+export interface ExaminationItemResponse {
+  id: number | null
+  examination_id: number
+  item_name: string
+  finding: string | null
+  measurement: string | null
+  abnormal_flag: boolean
+}
+
+export interface ExaminationItemRequest {
+  item_name: string
+  finding?: string
+  measurement?: string
+  abnormal_flag?: boolean
+}
+
+export interface ExaminationCreateRequest {
+  patient_id: number
+  doctor_id: number
+  examination_type: ExaminationType
+  body_part?: string
+  clinical_diagnosis?: string
+  scheduled_at?: string
+  emergency_flag?: boolean
+  image_url?: string
+  image_type?: string
+  items?: ExaminationItemRequest[]
+}
+
+export interface ExaminationCompleteRequest {
+  impression?: string
+  conclusion?: string
+  items: ExaminationItemRequest[]
+}
+
+export interface ExaminationResponse {
+  id: number
+  patient_id: number
+  doctor_id: number
+  examination_type: ExaminationType
+  body_part: string | null
+  clinical_diagnosis: string | null
+  scheduled_at: string | null
+  status: ExaminationStatus
+  emergency_flag: boolean
+  image_url: string | null
+  image_type: string | null
+  impression: string | null
+  conclusion: string | null
+  ai_interpretation: string | null
+  ai_confidence: number | null
+  image_analysis_result: string | null
+  image_confidence: number | null
+  reported_at: string | null
+  created_at: string
+  updated_at: string
+  items: ExaminationItemResponse[]
+}
+
+export interface ExaminationOrderItem {
+  task_id: number
+  priority: string
+  recommended_time: string
+  reason: string
+}
+
+export interface ExecutionOrderResponse {
+  execution_order: ExaminationOrderItem[]
+  summary: string
+  disclaimer_required: boolean
+  degraded: boolean
+}
+
+// ============ 检验域 (LabTest) ============
+
+export type SampleType =
+  | 'BLOOD'
+  | 'SERUM'
+  | 'PLASMA'
+  | 'URINE'
+  | 'STOOL'
+  | 'SPUTUM'
+  | 'OTHER'
+
+export type LabTestStatus =
+  | 'PENDING'
+  | 'COLLECTED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+export type AbnormalFlag =
+  | 'NORMAL'
+  | 'LOW'
+  | 'HIGH'
+  | 'CRITICAL_LOW'
+  | 'CRITICAL_HIGH'
+
+export interface LabTestItemResponse {
+  id: number | null
+  lab_test_id: number
+  item_name: string
+  result: string | null
+  unit: string | null
+  reference_range: string | null
+  abnormal_flag: AbnormalFlag
+}
+
+export interface LabTestItemRequest {
+  item_name: string
+  result?: string
+  unit?: string
+  reference_range?: string
+  abnormal_flag?: AbnormalFlag
+}
+
+export interface LabTestCreateRequest {
+  patient_id: number
+  doctor_id: number
+  test_type: string
+  sample_type: SampleType
+}
+
+export interface LabTestCompleteRequest {
+  report_conclusion?: string
+  items: LabTestItemRequest[]
+}
+
+export interface LabTestResponse {
+  id: number
+  patient_id: number
+  doctor_id: number
+  test_type: string
+  sample_type: SampleType
+  collected_at: string | null
+  status: LabTestStatus
+  report_conclusion: string | null
+  ai_interpretation: string | null
+  reported_at: string | null
+  created_at: string
+  updated_at: string
+  items: LabTestItemResponse[]
+}
+
+export interface LabTestTrendPoint {
+  test_date: string
+  result: string
+  abnormal_flag: AbnormalFlag
+}
+
+export interface LabTestTrendResponse {
+  item_name: string
+  unit: string
+  points: LabTestTrendPoint[]
+}
+
+// ============ 硬件接入 (Device) ============
+
+export type DeviceType =
+  | 'IMAGING'
+  | 'LAB_ANALYZER'
+  | 'MONITOR'
+  | 'OTHER'
+
+export type DeviceProtocol =
+  | 'HL7'
+  | 'DICOM'
+  | 'ASTM'
+
+export type DeviceStatus =
+  | 'ONLINE'
+  | 'OFFLINE'
+  | 'ERROR'
+  | 'MAINTENANCE'
+
+export interface DeviceCreateRequest {
+  device_code: string
+  device_name: string
+  device_type: DeviceType
+  protocol: DeviceProtocol
+  manufacturer?: string
+  model?: string
+  location?: string
+  connection_config?: string
+}
+
+export interface DeviceUpdateRequest {
+  device_name?: string
+  device_type?: DeviceType
+  protocol?: DeviceProtocol
+  manufacturer?: string
+  model?: string
+  location?: string
+  connection_config?: string
+}
+
+export interface DeviceResponse {
+  id: number
+  device_code: string
+  device_name: string
+  device_type: DeviceType
+  protocol: DeviceProtocol
+  status: DeviceStatus
+  manufacturer: string | null
+  model: string | null
+  location: string | null
+  connection_config: string | null
+  last_heartbeat_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DeviceMessageResponse {
+  id: number
+  device_id: number
+  message_type: string
+  protocol: DeviceProtocol
+  raw_content: string
+  parsed_content: string | null
+  processed: boolean
+  received_at: string
+  created_at: string
+  updated_at: string
+}

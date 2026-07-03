@@ -133,6 +133,63 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/ai/AiMedicalRecordGen.vue'),
         meta: { requiresAuth: true },
       },
+      // ---- 检查域 (Examination) ----
+      // 静态路径须排在动态参数路径之前
+      {
+        path: '/examinations',
+        name: 'ExaminationList',
+        component: () => import('../views/examination/ExaminationList.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/examinations/report',
+        name: 'ExaminationReport',
+        component: () => import('../views/examination/ExaminationReport.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/examinations/image',
+        name: 'ExaminationImage',
+        component: () => import('../views/examination/ExaminationImage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/examinations/order-suggest',
+        name: 'ExaminationOrderSuggest',
+        component: () => import('../views/examination/ExaminationOrderSuggest.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/examinations/:id',
+        name: 'ExaminationDetail',
+        component: () => import('../views/examination/ExaminationDetail.vue'),
+        meta: { requiresAuth: true },
+      },
+      // ---- 检验域 (LabTest) ----
+      {
+        path: '/lab-tests',
+        name: 'LabTestList',
+        component: () => import('../views/lab-test/LabTestList.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/lab-tests/report',
+        name: 'LabTestReport',
+        component: () => import('../views/lab-test/LabTestReport.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/lab-tests/trend',
+        name: 'LabTestTrend',
+        component: () => import('../views/lab-test/LabTestTrend.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/lab-tests/:id',
+        name: 'LabTestDetail',
+        component: () => import('../views/lab-test/LabTestDetail.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   },
 ]

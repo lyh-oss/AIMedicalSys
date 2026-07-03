@@ -1,5 +1,5 @@
 import type { BusinessError } from '../types'
-import { apiGet, apiPost } from './client'
+import { apiGet, apiPost, apiPut } from './client'
 
 import type {
   AiDiagnosisRequest,
@@ -14,9 +14,18 @@ import type {
   AiPrescriptionAuditResponse,
   AiResultResponse,
   ConsultationQueueResponse,
+  ExaminationCompleteRequest,
+  ExaminationCreateRequest,
+  ExaminationResponse,
+  ExecutionOrderResponse,
+  LabTestCompleteRequest,
+  LabTestCreateRequest,
+  LabTestResponse,
+  LabTestTrendResponse,
   MedicalRecordCreateRequest,
   MedicalRecordResponse,
   MedicalRecordTemplateResponse,
+  PageResponse,
   PrescriptionAuditRequest,
   PrescriptionCreateRequest,
   PrescriptionResponse,
@@ -186,5 +195,143 @@ export const doctorApi = {
       '/doctor/ai/medical-record-gen',
       request,
     )
+  },
+
+  // ---- 检查域 (Examination) ----
+
+  /** 创建检查单。POST /api/examinations */
+  createExamination: (
+    request: ExaminationCreateRequest,
+  ): Promise<ExaminationResponse | BusinessError> => {
+    return apiPost<ExaminationResponse>('/examinations', request)
+  },
+
+  /** 获取检查单详情。GET /api/examinations/{id} */
+  getExamination: (id: number): Promise<ExaminationResponse | BusinessError> => {
+    return apiGet<ExaminationResponse>(`/examinations/${id}`)
+  },
+
+  /** 分页查询检查单列表。GET /api/examinations */
+  listExaminations: (
+    params?: { patientId?: number; status?: string; page?: number; size?: number },
+  ): Promise<PageResponse<ExaminationResponse> | BusinessError> => {
+    return apiGet<PageResponse<ExaminationResponse>>('/examinations', { params })
+  },
+
+  /** 预约检查。PUT /api/examinations/{id}/schedule */
+  scheduleExamination: (
+    id: number,
+    scheduledAt: string,
+  ): Promise<ExaminationResponse | BusinessError> => {
+    return apiPut<ExaminationResponse>(`/examinations/${id}/schedule`, null, {
+      params: { scheduledAt },
+    })
+  },
+
+  /** 开始检查。PUT /api/examinations/{id}/start */
+  startExamination: (id: number): Promise<ExaminationResponse | BusinessError> => {
+    return apiPut<ExaminationResponse>(`/examinations/${id}/start`)
+  },
+
+  /** 完成检查。PUT /api/examinations/{id}/complete */
+  completeExamination: (
+    id: number,
+    request: ExaminationCompleteRequest,
+  ): Promise<ExaminationResponse | BusinessError> => {
+    return apiPut<ExaminationResponse>(`/examinations/${id}/complete`, request)
+  },
+
+  /** 取消检查。PUT /api/examinations/{id}/cancel */
+  cancelExamination: (id: number): Promise<ExaminationResponse | BusinessError> => {
+    return apiPut<ExaminationResponse>(`/examinations/${id}/cancel`)
+  },
+
+  /** 生成 AI 检查报告。POST /api/examinations/{id}/ai-report */
+  generateExaminationAiReport: (
+    id: number,
+  ): Promise<ExaminationResponse | BusinessError> => {
+    return apiPost<ExaminationResponse>(`/examinations/${id}/ai-report`)
+  },
+
+  /** AI 影像分析。POST /api/examinations/{id}/image-analysis */
+  analyzeExaminationImage: (
+    id: number,
+  ): Promise<ExaminationResponse | BusinessError> => {
+    return apiPost<ExaminationResponse>(`/examinations/${id}/image-analysis`)
+  },
+
+  /** AI 执行顺序推荐。GET /api/examinations/execution-order/{patientId} */
+  recommendExaminationOrder: (
+    patientId: number,
+  ): Promise<ExecutionOrderResponse | BusinessError> => {
+    return apiGet<ExecutionOrderResponse>(`/examinations/execution-order/${patientId}`)
+  },
+
+  // ---- 检验域 (LabTest) ----
+
+  /** 创建检验单。POST /api/lab-tests */
+  createLabTest: (
+    request: LabTestCreateRequest,
+  ): Promise<LabTestResponse | BusinessError> => {
+    return apiPost<LabTestResponse>('/lab-tests', request)
+  },
+
+  /** 获取检验单详情。GET /api/lab-tests/{id} */
+  getLabTest: (id: number): Promise<LabTestResponse | BusinessError> => {
+    return apiGet<LabTestResponse>(`/lab-tests/${id}`)
+  },
+
+  /** 分页查询检验单列表。GET /api/lab-tests */
+  listLabTests: (
+    params?: { patientId?: number; status?: string; page?: number; size?: number },
+  ): Promise<PageResponse<LabTestResponse> | BusinessError> => {
+    return apiGet<PageResponse<LabTestResponse>>('/lab-tests', { params })
+  },
+
+  /** 采样。PUT /api/lab-tests/{id}/collect */
+  collectSample: (id: number): Promise<LabTestResponse | BusinessError> => {
+    return apiPut<LabTestResponse>(`/lab-tests/${id}/collect`)
+  },
+
+  /** 开始检验。PUT /api/lab-tests/{id}/start */
+  startLabTest: (id: number): Promise<LabTestResponse | BusinessError> => {
+    return apiPut<LabTestResponse>(`/lab-tests/${id}/start`)
+  },
+
+  /** 完成检验。PUT /api/lab-tests/{id}/complete */
+  completeLabTest: (
+    id: number,
+    request: LabTestCompleteRequest,
+  ): Promise<LabTestResponse | BusinessError> => {
+    return apiPut<LabTestResponse>(`/lab-tests/${id}/complete`, request)
+  },
+
+  /** 取消检验。PUT /api/lab-tests/{id}/cancel */
+  cancelLabTest: (id: number): Promise<LabTestResponse | BusinessError> => {
+    return apiPut<LabTestResponse>(`/lab-tests/${id}/cancel`)
+  },
+
+  /** 生成 AI 检验报告。POST /api/lab-tests/{id}/ai-report */
+  generateLabTestAiReport: (
+    id: number,
+  ): Promise<LabTestResponse | BusinessError> => {
+    return apiPost<LabTestResponse>(`/lab-tests/${id}/ai-report`)
+  },
+
+  /** 查询检验趋势图。GET /api/lab-tests/trend/{patientId}?itemName= */
+  getLabTestTrend: (
+    patientId: number,
+    itemName: string,
+  ): Promise<LabTestTrendResponse | BusinessError> => {
+    return apiGet<LabTestTrendResponse>(`/lab-tests/trend/${patientId}`, {
+      params: { itemName },
+    })
+  },
+
+  /** AI 检验执行顺序推荐。GET /api/lab-tests/execution-order/{patientId} */
+  recommendLabTestOrder: (
+    patientId: number,
+  ): Promise<ExecutionOrderResponse | BusinessError> => {
+    return apiGet<ExecutionOrderResponse>(`/lab-tests/execution-order/${patientId}`)
   },
 }
